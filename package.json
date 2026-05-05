@@ -1,0 +1,26 @@
+{
+  "name": "eco-knock-blockchain",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JNU-econovation/eco-knock-blockchain.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/JNU-econovation/eco-knock-blockchain/issues"
+  },
+  "homepage": "https://github.com/JNU-econovation/eco-knock-blockchain#readme",
+  "devDependencies": {
+    "@types/node": "^22.19.17",
+    "hardhat": "^3.4.4",
+    "typescript": "~5.8.0"
+  }
+}

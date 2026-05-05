@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "compile": "hardhat compile",
+    "deploy:local": "hardhat ignition deploy ignition/modules/HelloEcoKnock.js",
+    "deploy:sepolia": "hardhat ignition deploy --network sepolia ignition/modules/HelloEcoKnock.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +22,7 @@
   },
   "homepage": "https://github.com/JNU-econovation/eco-knock-blockchain#readme",
   "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.1.4",
     "@types/node": "^22.19.17",
     "hardhat": "^3.4.4",
     "typescript": "~5.8.0"

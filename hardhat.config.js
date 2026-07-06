@@ -1,5 +1,5 @@
 import { defineConfig } from "hardhat/config";
-import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
+import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 
 process.loadEnvFile?.(".env");
 
@@ -7,11 +7,15 @@ const sepoliaRpcUrl = process.env.SEPOLIA_RPC_URL;
 const privateKey = process.env.PRIVATE_KEY;
 
 export default defineConfig({
-  plugins: [hardhatIgnition],
+  plugins: [hardhatToolboxViemPlugin],
   solidity: {
     version: "0.8.28",
   },
   networks: {
+    hardhatMainnet: {
+      type: "edr-simulated",
+      chainType: "l1",
+    },
     ...(sepoliaRpcUrl
       ? {
           sepolia: {

@@ -6,6 +6,7 @@
   "scripts": {
     "compile": "hardhat compile",
     "deploy:base-sepolia": "hardhat ignition deploy ignition/modules/RewardDistributor.js --network baseSepolia",
+    "deploy:sepolia": "hardhat ignition deploy ignition/modules/RewardDistributor.js --network sepolia",
     "test": "hardhat test"
   },
   "repository": {

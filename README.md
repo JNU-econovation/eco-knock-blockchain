@@ -48,13 +48,20 @@ npm install
 
 ```env
 SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_ALCHEMY_API_KEY
-BASE_SEPOLIA_RPC_URL=https://sepolia.base.org
 PRIVATE_KEY=YOUR_DEPLOYER_WALLET_PRIVATE_KEY
+SEPOLIA_REWARD_DISTRIBUTOR_ADDRESS=YOUR_SEPOLIA_REWARD_DISTRIBUTOR_ADDRESS
+
+REWARD_BATCH_ID=manual-test:YYYY-MM-DD:n
+REWARD_DAY=YYYYMMDD
+REWARD_RECIPIENTS=0xRECIPIENT_ADDRESS_1,0xRECIPIENT_ADDRESS_2
+REWARD_AMOUNTS=5,3
 ```
 
 주의:
 
-- `PRIVATE_KEY`는 배포 또는 운영용 지갑의 private key입니다.
+- 보상 지급 시 `PRIVATE_KEY`에 해당하는 지갑은 `RewardDistributor`의 `operator`와 일치해야 합니다.
+- `SEPOLIA_REWARD_DISTRIBUTOR_ADDRESS`는 Ethereum Sepolia에 배포된 `RewardDistributor` 주소입니다.
+- `REWARD_BATCH_ID`, `REWARD_DAY`, `REWARD_RECIPIENTS`, `REWARD_AMOUNTS`는 수동 지급 검증 스크립트의 입력값입니다.
 - 테스트넷 배포에는 테스트넷 ETH가 필요합니다.
 
 ## 명령어
@@ -77,10 +84,78 @@ npm test
 npm run deploy:sepolia
 ```
 
+### Ethereum Sepolia 보상 지급 검증
+
+```bash
+npm run distribute:sepolia
+```
+
 ### Base Sepolia 배포(미사용)
 
 ```bash
 npm run deploy:base-sepolia
+```
+
+## 보상 지급 검증
+
+`scripts/distributeRewards.js`는 중앙 서버 연동 전에 `RewardDistributor.distributeRewards(...)` 호출을 수동으로 검증하기 위한 스크립트입니다.
+
+스크립트는 다음 작업을 수행합니다.
+
+1. 지급 요청 환경 변수와 지갑 주소를 검증합니다.
+2. 실행 지갑이 `RewardDistributor`의 `operator`인지 확인합니다.
+3. `REWARD_BATCH_ID` 문자열을 `bytes32` 해시로 변환합니다.
+4. 지급 트랜잭션을 시뮬레이션합니다.
+5. 트랜잭션을 전송하고 블록에 포함될 때까지 기다립니다.
+
+여러 사용자에게 지급할 때는 `REWARD_RECIPIENTS`와 `REWARD_AMOUNTS`를 동일한 순서와 개수로 작성합니다.
+
+```env
+REWARD_RECIPIENTS=0xRECIPIENT_ADDRESS_1,0xRECIPIENT_ADDRESS_2
+REWARD_AMOUNTS=5,3
+```
+
+동일한 `REWARD_BATCH_ID`는 중복 지급 방지를 위해 다시 사용할 수 없습니다. 재실행이 필요한 새로운 지급 요청이라면 `manual-test:2026-07-13:2`와 같이 고유한 값을 사용합니다.
+
+### Etherscan에서 지급 결과 확인
+
+스크립트 실행 결과 중 `Transaction submitted:` 뒤에 출력되는 값이 트랜잭션 해시입니다.
+
+```text
+Transaction submitted: 0xTRANSACTION_HASH
+```
+
+다음 URL의 `{TRANSACTION_HASH}` 부분에 `Transaction submitted:` 뒤에 출력된 `0x`로 시작하는 트랜잭션 해시를 넣으면 지급 내역을 조회할 수 있습니다.
+
+```text
+https://sepolia.etherscan.io/tx/{TRANSACTION_HASH}
+```
+
+트랜잭션 상세 화면에서는 다음 항목을 확인합니다.
+
+- `Status`가 `Success`인지 확인합니다.
+- `From`이 트랜잭션에 서명한 operator 지갑인지 확인합니다.
+- `To`가 `RewardDistributor` 컨트랙트인지 확인합니다.
+- `ERC-20 Tokens Transferred`에서 수령 지갑과 지급된 KRT 수량을 확인합니다.
+
+스크립트 출력의 `Batch` 괄호 안에 표시되는 값은 중복 지급 방지에 사용하는 `batchId` 해시이며, Etherscan 트랜잭션 조회에 사용하는 값이 아닙니다.
+
+```text
+Batch: manual-test:2026-07-13:1 (0xBATCH_ID)
+```
+
+특정 지갑의 KRT 보유량은 다음 URL로 조회할 수 있습니다.
+
+```text
+https://sepolia.etherscan.io/token/{KRT_TOKEN_ADDRESS}?a={WALLET_ADDRESS}
+```
+
+현재 Ethereum Sepolia의 KRT 컨트랙트 주소는 `0x052ce2e1310aDF7E2A42B6F87bA2F1d64fE92f30`입니다.
+
+블록 번호는 `Reward distribution confirmed in block ...` 출력에서 확인할 수 있으며, 다음 URL로 해당 블록을 조회할 수 있습니다.
+
+```text
+https://sepolia.etherscan.io/block/{BLOCK_NUMBER}
 ```
 
 ## 배포 모듈
@@ -120,6 +195,10 @@ Explorer:
 
 - https://sepolia.etherscan.io/address/0x052ce2e1310aDF7E2A42B6F87bA2F1d64fE92f30
 - https://sepolia.etherscan.io/address/0x1398E75da0a95F2a6C65a1dFb002d8c3af3Db23d
+
+보상 지급 검증:
+
+- 지급 트랜잭션 확인: `https://sepolia.etherscan.io/tx/{Transaction submitted 뒤에 출력된 해시값}`
 
 ## 중앙 서버 연동 시 필요한 값
 
